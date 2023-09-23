@@ -16,10 +16,16 @@ class Customer {
   });
 
   Map<String, dynamic> toMap() {
+    final birthDate = DateTime(
+        dateOfBirth.year,
+        dateOfBirth.month,
+        dateOfBirth.day,
+    );
+
     return {
       'first_name': firstName,
       'last_name': lastName,
-      'date_of_birth': dateOfBirth.toIso8601String(),
+      'date_of_birth': birthDate.toIso8601String(),
       'phone_number': phoneNumber,
       'email': email,
       'bank_account_number': bankAccountNumber

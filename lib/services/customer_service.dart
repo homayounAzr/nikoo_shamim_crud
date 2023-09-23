@@ -9,7 +9,7 @@ class CustomerService {
   CustomerService(this._customerRepository);
 
   Future<void> createCustomer(Customer customer) async {
-    if(_isValidCustomer(customer)) {
+    if(await _isValidCustomer(customer)) {
       await _customerRepository.createCustomer(customer);
     } else {
       throw Exception('Invalid customer');
@@ -17,8 +17,7 @@ class CustomerService {
   }
 
   Future<void> updateCustomer(Customer customer) async {
-    // Input validation
-    if(_isValidCustomer(customer)) {
+    if(await _isValidCustomer(customer)) {
       await _customerRepository.updateCustomer(customer);
     } else {
       throw Exception('Invalid customer');
@@ -33,12 +32,19 @@ class CustomerService {
     return await _customerRepository.getCustomer(id);
   }
 
+  Future<bool> doesEmailExist(String email) async {
+    return await _customerRepository.doesEmailExist(email);
+  }
+
+  Future<bool> doesCustomerExist(Customer customer) async {
+    return await _customerRepository.doesCustomerExist(customer);
+  }
+
   Future<List<Customer>> getAllCustomers() async {
     return await _customerRepository.getAllCustomers();
   }
 
-  bool _isValidCustomer(Customer customer) {
-    //todo implement validations
+  Future<bool> _isValidCustomer(Customer customer) async{
     if (!CustomerValidator.isValidPhoneNumber(customer.phoneNumber)) {
       return false;
     }
@@ -51,11 +57,11 @@ class CustomerService {
       return false;
     }
 
-    if (!CustomerValidator.isUniqueEmail(customer.email)) {
+    if (!await CustomerValidator.isUniqueEmail(customer.email)) {
       return false;
     }
 
-    if (!CustomerValidator.isUniqueCustomer(customer)) {
+    if (!await CustomerValidator.isUniqueCustomer(customer)) {
       return false;
     }
 

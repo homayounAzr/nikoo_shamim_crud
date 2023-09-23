@@ -3,6 +3,8 @@ import '../models/customer.dart';
 import '../repositories/customer_repository.dart';
 import '../services/customer_service.dart';
 import '../viewmodels/customer_viewmodel.dart';
+import 'package:datetime_picker_formfield_new/datetime_picker_formfield.dart';
+import 'package:intl/intl.dart';
 
 class CustomerPage extends StatefulWidget {
   const CustomerPage({super.key});
@@ -55,8 +57,9 @@ class _CreateCustomerPageState extends State<CreateCustomerPage> {
   final _phoneController = TextEditingController();
   final _emailController = TextEditingController();
   final _accountController = TextEditingController();
-
+  final _dateOfBirthController = TextEditingController();
   final _viewModel = CustomerViewModel(CustomerService(CustomerDatabaseRepository()));
+  final format = DateFormat("yyyy-MM-dd");
 
   @override
   Widget build(BuildContext context) {
@@ -75,6 +78,19 @@ class _CreateCustomerPageState extends State<CreateCustomerPage> {
             TextField(
               controller: _lastNameController,
               decoration: const InputDecoration(hintText: 'Last Name'),
+            ),
+            DateTimeField(
+              format: format,
+              controller: _dateOfBirthController,
+              decoration: const InputDecoration(hintText: 'Date Of Birth'),
+              onShowPicker: (context, currentValue) {
+                return showDatePicker(
+                  context: context,
+                  firstDate: DateTime(2010),
+                  initialDate: currentValue ?? DateTime.now(),
+                  lastDate: DateTime(2030),
+                );
+              },
             ),
             TextField(
               controller: _phoneController,
@@ -98,9 +114,7 @@ class _CreateCustomerPageState extends State<CreateCustomerPage> {
                   bankAccountNumber: _accountController.text,
                   email: _emailController.text,
                   phoneNumber: _phoneController.text,
-                  ///.. populate this two fields
-                  dateOfBirth: DateTime.now(),
-                  // id: 1,
+                  dateOfBirth: DateTime.parse(_dateOfBirthController.text),
                 );
 
                 await _viewModel.createCustomer(customer);

@@ -7,6 +7,8 @@ abstract class CustomerRepository {
   Future<void> updateCustomer(Customer customer);
   Future<void> deleteCustomer(Customer customer);
   Future<Customer> getCustomer(int id);
+  Future<bool> doesEmailExist(String email);
+  Future<bool> doesCustomerExist(Customer customer);
   Future<List<Customer>> getAllCustomers();
 }
 
@@ -51,12 +53,12 @@ class CustomerDatabaseRepository implements CustomerRepository {
     await db.execute('''
       CREATE TABLE $table (
         $columnId INTEGER PRIMARY KEY,
-        $columnFirstName TEXT NOT NULL,
-        $columnLastName TEXT NOT NULL,
-        $columnDateOfBirth TEXT NOT NULL,
-        $columnPhoneNumber TEXT NOT NULL,
+        $columnFirstName VARCHAR(24) NOT NULL,
+        $columnLastName VARCHAR(24) NOT NULL,
+        $columnDateOfBirth VARCHAR(32) NOT NULL,
+        $columnPhoneNumber VARCHAR(16) NOT NULL,
         $columnEmail TEXT NOT NULL,
-        $columnBankAccountNumber TEXT NOT NULL
+        $columnBankAccountNumber VARCHAR(16) NOT NULL
       )
     ''');
   }
@@ -86,7 +88,8 @@ class CustomerDatabaseRepository implements CustomerRepository {
   Future<Customer> getCustomer(int id) async {
     final db = await database;
 
-    final maps = await db.query(table,
+    final maps = await db.query(
+        table,
         columns: [columnId, columnFirstName, columnLastName, columnDateOfBirth, columnPhoneNumber, columnEmail, columnBankAccountNumber],
         where: '$columnId = ?',
         whereArgs: [id]);
@@ -96,6 +99,38 @@ class CustomerDatabaseRepository implements CustomerRepository {
     } else {
       throw Exception('ID $id not found');
     }
+  }
+
+  @override
+  Future<bool> doesEmailExist(String email) async {
+    final db = await database;
+
+    final result = await db.query(
+        table,
+        where: 'email = ?',
+        whereArgs: [email]
+    );
+
+    return result.isNotEmpty;
+  }
+
+  @override
+  Future<bool> doesCustomerExist(Customer customer) async {
+
+    final birthDate = DateTime(
+        customer.dateOfBirth.year,
+        customer.dateOfBirth.month,
+        customer.dateOfBirth.day
+    );
+
+    final db = await database;
+
+    final result = await db.query(
+        table,
+        where: '$columnFirstName = ? AND $columnLastName = ? AND $columnDateOfBirth = ?',
+        whereArgs: [customer.firstName, customer.lastName, birthDate.toIso8601String()]
+    );
+    return result.isNotEmpty;
   }
 
   @override
