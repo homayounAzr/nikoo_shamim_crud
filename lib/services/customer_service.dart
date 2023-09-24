@@ -9,18 +9,18 @@ class CustomerService {
   CustomerService(this._customerRepository);
 
   Future<void> createCustomer(Customer customer) async {
-    if(await _isValidCustomer(customer)) {
+    if(await createCustomerValidation(customer)) {
       await _customerRepository.createCustomer(customer);
     } else {
-      throw Exception('Invalid customer');
+      throw Exception('Invalid Parameter');
     }
   }
 
   Future<void> updateCustomer(Customer customer) async {
-    if(await _isValidCustomer(customer)) {
+    if(await updateCustomerValidation(customer)) {
       await _customerRepository.updateCustomer(customer);
     } else {
-      throw Exception('Invalid customer');
+      throw Exception('Invalid Parameter');
     }
   }
 
@@ -44,7 +44,7 @@ class CustomerService {
     return await _customerRepository.getAllCustomers();
   }
 
-  Future<bool> _isValidCustomer(Customer customer) async{
+  Future<bool> createCustomerValidation(Customer customer) async{
     if (!CustomerValidator.isValidPhoneNumber(customer.phoneNumber)) {
       return false;
     }
@@ -62,6 +62,33 @@ class CustomerService {
     }
 
     if (!await CustomerValidator.isUniqueCustomer(customer)) {
+      return false;
+    }
+
+    return true;
+
+  }
+
+  Future<bool> updateCustomerValidation(Customer customer) async{
+    final Customer c = await _customerRepository.getCustomer(customer.id);
+
+    if (!CustomerValidator.isValidPhoneNumber(customer.phoneNumber)) {
+      return false;
+    }
+
+    if (!CustomerValidator.isValidEmail(customer.email)) {
+      return false;
+    }
+
+    if (!CustomerValidator.isValidBankAccountNumber(customer.bankAccountNumber)) {
+      return false;
+    }
+
+    if (!await CustomerValidator.isUniqueEmail(customer.email) && c.email != customer.email) {
+      return false;
+    }
+
+    if (!await CustomerValidator.isUniqueCustomer(customer) && (c.firstName != customer.firstName || c.lastName != customer.lastName || c.dateOfBirth != customer.dateOfBirth)) {
       return false;
     }
 

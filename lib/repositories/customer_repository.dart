@@ -4,11 +4,17 @@ import '../models/customer.dart';
 
 abstract class CustomerRepository {
   Future<void> createCustomer(Customer customer);
+
   Future<void> updateCustomer(Customer customer);
+
   Future<void> deleteCustomer(Customer customer);
+
   Future<Customer> getCustomer(int id);
+
   Future<bool> doesEmailExist(String email);
+
   Future<bool> doesCustomerExist(Customer customer);
+
   Future<List<Customer>> getAllCustomers();
 }
 
@@ -18,7 +24,7 @@ class CustomerDatabaseRepository implements CustomerRepository {
   static const _dbVersion = 1;
   static const table = 'customers';
 
-  static const columnId = 'id';
+  static const columnId = '_id';
   static const columnFirstName = 'first_name';
   static const columnLastName = 'last_name';
   static const columnDateOfBirth = 'date_of_birth';
@@ -33,7 +39,7 @@ class CustomerDatabaseRepository implements CustomerRepository {
   CustomerDatabaseRepository._internal();
 
   Future<Database> get database async {
-    if(_database != null) {
+    if (_database != null) {
       return _database!;
     }
 
@@ -46,7 +52,6 @@ class CustomerDatabaseRepository implements CustomerRepository {
     final path = join(dbPath, _dbName);
 
     return await openDatabase(path, version: _dbVersion, onCreate: _onCreate);
-
   }
 
   Future _onCreate(Database db, int version) async {
@@ -57,7 +62,7 @@ class CustomerDatabaseRepository implements CustomerRepository {
         $columnLastName VARCHAR(24) NOT NULL,
         $columnDateOfBirth VARCHAR(32) NOT NULL,
         $columnPhoneNumber VARCHAR(16) NOT NULL,
-        $columnEmail TEXT NOT NULL,
+        $columnEmail TEXT NOT NULL UNIQUE,
         $columnBankAccountNumber VARCHAR(16) NOT NULL
       )
     ''');
@@ -73,24 +78,30 @@ class CustomerDatabaseRepository implements CustomerRepository {
   Future<void> updateCustomer(Customer customer) async {
     final db = await database;
 
-    await db.update(table, customer.toMap(),
-        where: '$columnId = ?', whereArgs: [customer.email]);
+    await db.update(table, customer.toMap(), where: '_id = ?', whereArgs: [customer.id]);
   }
 
   @override
   Future<void> deleteCustomer(Customer customer) async {
     final db = await database;
 
-    await db.delete(table, where: '$columnId = ?', whereArgs: [customer.email]);
+    await db.delete(table, where: '$columnEmail = ?', whereArgs: [customer.email]);
   }
 
   @override
   Future<Customer> getCustomer(int id) async {
     final db = await database;
 
-    final maps = await db.query(
-        table,
-        columns: [columnId, columnFirstName, columnLastName, columnDateOfBirth, columnPhoneNumber, columnEmail, columnBankAccountNumber],
+    final maps = await db.query(table,
+        columns: [
+          columnId,
+          columnFirstName,
+          columnLastName,
+          columnDateOfBirth,
+          columnPhoneNumber,
+          columnEmail,
+          columnBankAccountNumber
+        ],
         where: '$columnId = ?',
         whereArgs: [id]);
 
@@ -105,31 +116,22 @@ class CustomerDatabaseRepository implements CustomerRepository {
   Future<bool> doesEmailExist(String email) async {
     final db = await database;
 
-    final result = await db.query(
-        table,
-        where: 'email = ?',
-        whereArgs: [email]
-    );
+    final result = await db.query(table, where: 'email = ?', whereArgs: [email]);
 
     return result.isNotEmpty;
   }
 
   @override
   Future<bool> doesCustomerExist(Customer customer) async {
-
-    final birthDate = DateTime(
-        customer.dateOfBirth.year,
-        customer.dateOfBirth.month,
-        customer.dateOfBirth.day
-    );
+    final birthDate =
+        DateTime(customer.dateOfBirth.year, customer.dateOfBirth.month, customer.dateOfBirth.day);
 
     final db = await database;
 
     final result = await db.query(
         table,
         where: '$columnFirstName = ? AND $columnLastName = ? AND $columnDateOfBirth = ?',
-        whereArgs: [customer.firstName, customer.lastName, birthDate.toIso8601String()]
-    );
+        whereArgs: [customer.firstName, customer.lastName, birthDate.toIso8601String()]);
     return result.isNotEmpty;
   }
 
@@ -138,8 +140,6 @@ class CustomerDatabaseRepository implements CustomerRepository {
     final db = await database;
 
     final result = await db.query(table);
-    // print(result);
     return result.map((json) => Customer.fromMap(json)).toList();
   }
-
 }

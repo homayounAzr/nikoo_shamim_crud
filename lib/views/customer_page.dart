@@ -1,3 +1,4 @@
+// ignore_for_file: use_build_context_synchronously
 import 'package:flutter/material.dart';
 import '../models/customer.dart';
 import '../repositories/customer_repository.dart';
@@ -6,19 +7,19 @@ import '../viewmodels/customer_viewmodel.dart';
 import 'package:datetime_picker_formfield_new/datetime_picker_formfield.dart';
 import 'package:intl/intl.dart';
 
-class CustomerPage extends StatefulWidget {
-  const CustomerPage({super.key});
+class HomePage extends StatefulWidget {
+  const HomePage({super.key});
 
   @override
-  State<CustomerPage> createState() => _CustomerPageState();
+  State<HomePage> createState() => _HomePageState();
 }
-class _CustomerPageState extends State<CustomerPage> {
+class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Customers'),
+        title: const Text('Home'),
       ),
       body: Center(
         child: Column(
@@ -27,7 +28,7 @@ class _CustomerPageState extends State<CustomerPage> {
             ElevatedButton(
                 child: const Text('Create Customer'),
                 onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const CreateCustomerPage(),settings: const RouteSettings(name: 'editHome'),));
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const CreateCustomerPage()));
                 }
             ),
             ElevatedButton(
@@ -45,21 +46,39 @@ class _CustomerPageState extends State<CustomerPage> {
 }
 
 class CreateCustomerPage extends StatefulWidget {
-  const CreateCustomerPage({super.key});
+  final Customer? customer;
+  final VoidCallback? onUpdate;
+
+  const CreateCustomerPage({super.key, this.customer, this.onUpdate});
 
   @override
   State<CreateCustomerPage> createState() => _CreateCustomerPageState();
 }
 class _CreateCustomerPageState extends State<CreateCustomerPage> {
 
-  final _firstNameController = TextEditingController();
-  final _lastNameController = TextEditingController();
-  final _phoneController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _accountController = TextEditingController();
-  final _dateOfBirthController = TextEditingController();
+  TextEditingController _firstNameController = TextEditingController();
+  TextEditingController _lastNameController = TextEditingController();
+  TextEditingController _phoneController = TextEditingController();
+  TextEditingController _emailController = TextEditingController();
+  TextEditingController _accountController = TextEditingController();
+  TextEditingController _dateOfBirthController = TextEditingController();
   final _viewModel = CustomerViewModel(CustomerService(CustomerDatabaseRepository()));
-  final format = DateFormat("yyyy-MM-dd");
+  final _dateFormat = DateFormat("yyyy-MM-dd");
+
+  @override
+  void initState() {
+    super.initState();
+
+    _firstNameController = TextEditingController(text: widget.customer?.firstName);
+    _lastNameController = TextEditingController(text: widget.customer?.lastName);
+    _phoneController = TextEditingController(text: widget.customer?.phoneNumber);
+    _emailController = TextEditingController(text: widget.customer?.email);
+    _accountController = TextEditingController(text: widget.customer?.bankAccountNumber);
+    _dateOfBirthController = TextEditingController(
+        text: widget.customer?.dateOfBirth != null?
+        _dateFormat.format(widget.customer!.dateOfBirth): null
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -67,64 +86,93 @@ class _CreateCustomerPageState extends State<CreateCustomerPage> {
       appBar: AppBar(
         title: const Text('Create Customer'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: _firstNameController,
-              decoration: const InputDecoration(hintText: 'First Name'),
-            ),
-            TextField(
-              controller: _lastNameController,
-              decoration: const InputDecoration(hintText: 'Last Name'),
-            ),
-            DateTimeField(
-              format: format,
-              controller: _dateOfBirthController,
-              decoration: const InputDecoration(hintText: 'Date Of Birth'),
-              onShowPicker: (context, currentValue) {
-                return showDatePicker(
-                  context: context,
-                  firstDate: DateTime(2010),
-                  initialDate: currentValue ?? DateTime.now(),
-                  lastDate: DateTime(2030),
-                );
-              },
-            ),
-            TextField(
-              controller: _phoneController,
-              decoration: const InputDecoration(hintText: 'Phone Number'),
-            ),
-            TextField(
-              controller: _emailController,
-              decoration: const InputDecoration(hintText: 'Email'),
-            ),
-            TextField(
-              controller: _accountController,
-              decoration: const InputDecoration(hintText: 'Bank Account Number'),
-            ),
-            const SizedBox(height: 16,),
-            ElevatedButton(
-              child: const Text('Create Customer'),
-              onPressed: () async {
-                final customer = Customer(
-                  firstName: _firstNameController.text,
-                  lastName: _lastNameController.text,
-                  bankAccountNumber: _accountController.text,
-                  email: _emailController.text,
-                  phoneNumber: _phoneController.text,
-                  dateOfBirth: DateTime.parse(_dateOfBirthController.text),
-                );
-
-                await _viewModel.createCustomer(customer);
-
-                // ignore: use_build_context_synchronously
-                Navigator.of(context).pop();
-              },
-            )
-          ],
-        ),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          Column(
+            children: [
+              TextField(
+                controller: _firstNameController,
+                decoration: const InputDecoration(hintText: 'First Name'),
+              ),
+              TextField(
+                controller: _lastNameController,
+                decoration: const InputDecoration(hintText: 'Last Name'),
+              ),
+              DateTimeField(
+                format: _dateFormat,
+                controller: _dateOfBirthController,
+                decoration: const InputDecoration(hintText: 'Date Of Birth'),
+                onShowPicker: (context, currentValue) {
+                  return showDatePicker(
+                    context: context,
+                    firstDate: DateTime(2010),
+                    initialDate: currentValue ?? DateTime.now(),
+                    lastDate: DateTime(2030),
+                  );
+                },
+              ),
+              TextField(
+                controller: _phoneController,
+                decoration: const InputDecoration(hintText: 'Phone Number'),
+              ),
+              TextField(
+                controller: _emailController,
+                decoration: const InputDecoration(hintText: 'Email'),
+              ),
+              TextField(
+                controller: _accountController,
+                decoration: const InputDecoration(hintText: 'Bank Account Number'),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 24),
+                child: ElevatedButton(
+                  child: const Text('Create Customer'),
+                  onPressed: () async {
+                    final customer = Customer(
+                      id: widget.customer?.id ?? -1,
+                      firstName: _firstNameController.text,
+                      lastName: _lastNameController.text,
+                      bankAccountNumber: _accountController.text,
+                      email: _emailController.text,
+                      phoneNumber: _phoneController.text,
+                      dateOfBirth: DateTime.parse(_dateOfBirthController.text),
+                    );
+                    try{
+                      if(widget.customer != null){
+                        await _viewModel.updateCustomer(customer);
+                        widget.onUpdate!();
+                        Navigator.of(context).pop();
+                      }else {
+                        await _viewModel.createCustomer(customer);
+                        Navigator.of(context).pop();
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => const CustomersPage()));
+                      }
+                    }catch(e) {
+                      return showDialog(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                              title: const Text('Error'),
+                              content: const Text('Invalid Parameter'),
+                              actions: [
+                                TextButton(
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                    },
+                                    child: const Text('OK')
+                                )
+                              ],
+                            );
+                          }
+                      );
+                    }
+                  },
+                ),
+              )
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -168,8 +216,30 @@ class _CustomersPageState extends State<CustomersPage> {
           final customer = customers[index];
 
           return ListTile(
+            shape: RoundedRectangleBorder(
+              side: BorderSide(color: Colors.grey.shade300),
+              borderRadius: BorderRadius.circular(10),
+            ),
             title: Text('${customer.firstName} ${customer.lastName}'),
             subtitle: Text(customer.email),
+            leading: IconButton(
+              icon: const Icon(Icons.delete),
+              onPressed: (){
+                setState(() {
+                  _viewModel.deleteCustomer(customer);
+                });
+              },
+            ),
+            trailing: IconButton(
+              icon: const Icon(Icons.edit),
+              onPressed: (){
+                Navigator.push(context, MaterialPageRoute(builder: (context) => CreateCustomerPage(
+                  customer: customer,
+                  onUpdate: (){
+                  setState(() {});
+                },)));
+              },
+            ),
           );
 
         }
