@@ -1,6 +1,7 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
-import '../models/customer.dart';
+
+import '../../domain/models/customer.dart';
 
 abstract class CustomerRepository {
   Future<void> createCustomer(Customer customer);

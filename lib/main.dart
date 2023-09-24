@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:nikoo_shamim_crud/views/customer_page.dart';
+import 'package:nikoo_shamim_crud/presentation/views/customer_page.dart';
 
 void main() {
   runApp(const MyApp());

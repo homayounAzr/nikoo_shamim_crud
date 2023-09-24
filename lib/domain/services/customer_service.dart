@@ -1,5 +1,5 @@
+import '../../infrastructure/repositories/customer_repository.dart';
 import '../models/customer.dart';
-import '../repositories/customer_repository.dart';
 import '../validators/customer_validator.dart';
 
 class CustomerService {

@@ -1,11 +1,12 @@
 // ignore_for_file: use_build_context_synchronously
 import 'package:flutter/material.dart';
-import '../models/customer.dart';
-import '../repositories/customer_repository.dart';
-import '../services/customer_service.dart';
-import '../viewmodels/customer_viewmodel.dart';
 import 'package:datetime_picker_formfield_new/datetime_picker_formfield.dart';
 import 'package:intl/intl.dart';
+
+import '../../domain/models/customer.dart';
+import '../../domain/services/customer_service.dart';
+import '../../infrastructure/repositories/customer_repository.dart';
+import '../../infrastructure/viewmodels/customer_viewmodel.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});

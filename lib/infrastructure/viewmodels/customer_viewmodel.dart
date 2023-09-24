@@ -1,5 +1,6 @@
-import '../models/customer.dart';
-import '../services/customer_service.dart';
+
+import '../../domain/models/customer.dart';
+import '../../domain/services/customer_service.dart';
 
 class CustomerViewModel {
 
