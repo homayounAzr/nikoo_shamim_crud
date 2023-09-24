@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:datetime_picker_formfield_new/datetime_picker_formfield.dart';
 import 'package:intl/intl.dart';
-
 import '../../domain/models/customer.dart';
 import '../../domain/services/customer_service.dart';
 import '../../infrastructure/repositories/customer_repository.dart';
@@ -85,9 +84,10 @@ class _CreateCustomerPageState extends State<CreateCustomerPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Create Customer'),
+        title: const Text('Create Customer Page'),
       ),
       body: ListView(
+        key: const Key('List view'),
         padding: const EdgeInsets.all(16),
         children: [
           Column(
